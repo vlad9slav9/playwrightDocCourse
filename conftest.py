@@ -26,8 +26,9 @@ def browser(playwright, request):
 def unauth_page(browser):
     context = browser.new_context()
     page = context.new_page()
-    page.goto("https://www.saucedemo.com")
-    yield LoginPage(page)
+    login_page = LoginPage(page)
+    login_page.navigate()
+    yield login_page
     context.close()
 
 @pytest.fixture(scope="function")
