@@ -1,33 +1,29 @@
-import re
-from playwright.sync_api import Page, expect
+from playwright.async_api import expect
+
+from pages.inventory_page import InventoryPage
+from pages.login_page import LoginPage
 
 
-def test_correct_login(unauth_page):
-
-    unauth_page.locator("#user-name").fill("standard_user")
-    unauth_page.locator("#password").fill("secret_sauce")
-    unauth_page.locator("#login-button").click()
-
-    expect(unauth_page.locator("[data-test=\"shopping-cart-link\"]")).to_be_visible()
-
-def test_incorrect_login(unauth_page):
-
-    unauth_page.locator("#user-name").fill("FalseName")
-    unauth_page.locator("#password").fill("secret_sauce")
-    unauth_page.locator("#login-button").click()
-
-    expect(unauth_page.locator("[data-test=\"error\"]")).to_contain_text(
-        "Epic sadface: Username and password do not match any user in this service")
+def test_correct_login(unauth_page: LoginPage):
+    unauth_page.login("standard_user", "secret_sauce")
+    unauth_page.assert_login_successful()
 
 
-def test_add_cart(auth_page):
-    auth_page.locator("#add-to-cart-sauce-labs-backpack").click()
-    auth_page.locator("[data-test=\"shopping-cart-link\"]").click()
-    expect(auth_page.locator("[data-test=\"inventory-item-name\"]")).to_contain_text("Sauce Labs Backpack")
+def test_incorrect_login(unauth_page: LoginPage):
+    unauth_page.login("FalseName", "secret_sauce")
+    unauth_page.assert_login_failed()
 
-def test_logout(auth_page):
-    auth_page.get_by_role("button", name="Open Menu").click()
-    auth_page.locator("[data-test=\"logout-sidebar-link\"]").click()
-    expect(auth_page.locator("[data-test=\"login-button\"]")).to_be_visible()
+
+def test_add_cart(auth_page: InventoryPage):
+    auth_page.add_item_to_cart()
+    auth_page.go_to_cart()
+    auth_page.assert_item_in_cart()
+
+
+def test_logout(auth_page: InventoryPage):
+    auth_page.open_burger_menu()
+    auth_page.click_logout_button()
+    auth_page.assert_logged_out()
+
 
 

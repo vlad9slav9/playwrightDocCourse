@@ -1,6 +1,8 @@
 import os
 import pytest
 import configparser
+from pages.login_page import LoginPage
+from pages.inventory_page import InventoryPage
 
 config = configparser.ConfigParser()
 config.read('auth.ini')
@@ -11,7 +13,6 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def browser(playwright, request):
     browser_name = request.config.getoption("browser_name")
-    #browser = None
     if browser_name == "gost":
         browser = playwright.chromium.launch(executable_path=r"C:\Program Files (x86)\krtech\chrome\chrome.exe", headless=False)
     elif browser_name == "yandex":
@@ -25,35 +26,21 @@ def browser(playwright, request):
 def unauth_page(browser):
     context = browser.new_context()
     page = context.new_page()
-
     page.goto("https://www.saucedemo.com")
-
-    yield page
-
+    yield LoginPage(page)
     context.close()
 
 @pytest.fixture(scope="function")
 def auth_page(browser):
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("https://www.saucedemo.com/inventory.html")
 
-    if os.path.exists("auth.json"):
-        context = browser.new_context(storage_state="auth.json")
-        page = context.new_page()
-        page.goto("https://www.saucedemo.com/inventory.html")
+    username = config['credentials']['username']
+    password = config['credentials']['password']
 
-    else:
-        context = browser.new_context()
-        page = context.new_page()
+    login_page = LoginPage(page)
+    login_page.login(username, password)
 
-        username = config['credentials']['username']
-        password = config['credentials']['password']
-
-        page.goto("https://www.saucedemo.com")
-        page.locator("#user-name").fill(username)
-        page.locator("#password").fill(password)
-        page.locator("#login-button").click()
-
-        context.storage_state(path="auth.json")
-
-    yield page
-
+    yield InventoryPage(page)
     context.close()
