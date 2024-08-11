@@ -1,11 +1,9 @@
-import os
-import pytest
-import configparser
-from pages.login_page import LoginPage
-from pages.inventory_page import InventoryPage
 
-config = configparser.ConfigParser()
-config.read('auth.ini')
+import pytest
+
+from pages.inventory_page import InventoryPage
+from pages.login_page import LoginPage
+
 
 def pytest_addoption(parser):
     parser.addoption('--browser_name', action='store', default="gost", help="Choose browser: gost or yandex")
@@ -31,17 +29,20 @@ def unauth_page(browser):
     yield login_page
     context.close()
 
+
 @pytest.fixture(scope="function")
-def auth_page(browser):
-    context = browser.new_context()
-    page = context.new_page()
-    page.goto("https://www.saucedemo.com/inventory.html")
+def auth_page(request, unauth_page: LoginPage):
+    user_type = request.param
 
-    username = config['credentials']['username']
-    password = config['credentials']['password']
+    if user_type == "standard_user":
+        unauth_page.login_with_standard_user()
+    elif user_type == "problem_user":
+        unauth_page.login_with_problem_user()
+    elif user_type == "locked_out_user":
+        unauth_page.login_with_locked_out_user()
+    else:
+        raise ValueError(f"Unsupported user type: {user_type}")
 
-    login_page = LoginPage(page)
-    login_page.login(username, password)
+    inventory_page = InventoryPage(unauth_page.page)
 
-    yield InventoryPage(page)
-    context.close()
+    yield inventory_page

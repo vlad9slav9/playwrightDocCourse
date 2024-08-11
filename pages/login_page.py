@@ -1,3 +1,5 @@
+import configparser
+
 from playwright.async_api import Page
 
 from pages.base_page import BasePage
@@ -11,13 +13,28 @@ class LoginPage(BasePage):
         self.login_button = self.page.locator("#login-button")
         self.error_message = self.page.locator("[data-test=\"error\"]")
 
+        self.config = configparser.ConfigParser()
+        self.config.read('auth.ini')
+
     def login(self, username: str, password: str):
         self.username_input.fill(username)
         self.password_input.fill(password)
         self.login_button.click()
 
-    def assert_login_successful(self):
-        expect(self.page.locator("[data-test=\"shopping-cart-link\"]")).to_be_visible()
-
     def assert_login_failed(self):
-        expect(self.error_message).to_contain_text("Epic sadface: Username and password do not match any user in this service")
+        expect(self.error_message).to_contain_text("Epic sadface: Sorry, this user has been locked out.")
+
+    def login_with_standard_user(self):
+        username = self.config['standard_user']['username']
+        password = self.config['standard_user']['password']
+        self.login(username, password)
+
+    def login_with_locked_out_user(self):
+        username = self.config['locked_out_user']['username']
+        password = self.config['locked_out_user']['password']
+        self.login(username, password)
+
+    def login_with_problem_user(self):
+        username = self.config['problem_user']['username']
+        password = self.config['problem_user']['password']
+        self.login(username, password)

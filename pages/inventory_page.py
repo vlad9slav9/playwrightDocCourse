@@ -3,6 +3,7 @@ from playwright.async_api import Page
 from pages.base_page import BasePage
 from playwright.sync_api import expect
 
+
 class InventoryPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
@@ -12,6 +13,9 @@ class InventoryPage(BasePage):
         self.burger_menu = self.page.locator("#react-burger-menu-btn")
         self.logout_sidebar_link = self.page.locator("[data-test=\"logout-sidebar-link\"]")
         self.login_button = self.page.locator("[data-test=\"login-button\"]")
+
+    def assert_shopping_cart_visible(self):
+        expect(self.shopping_cart_link).to_be_visible()
 
     def add_item_to_cart(self):
         self.add_to_cart_button.click()
