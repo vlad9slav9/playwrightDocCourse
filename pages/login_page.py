@@ -20,6 +20,7 @@ class LoginPage:
     def navigate(self):
         self.page.goto("/")
 
+
     def login(self, username: str, password: str):
         self.username_input.fill(username)
         self.password_input.fill(password)
