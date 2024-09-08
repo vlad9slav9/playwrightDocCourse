@@ -1,13 +1,14 @@
 import configparser
 
 from playwright.async_api import Page
-
-from pages.base_page import BasePage
 from playwright.sync_api import expect
 
-class LoginPage(BasePage):
+from pages.inventory_page import InventoryPage
+
+
+class LoginPage:
     def __init__(self, page: Page):
-        super().__init__(page)
+        self.page = page
         self.username_input = self.page.locator("#user-name")
         self.password_input = self.page.locator("#password")
         self.login_button = self.page.locator("#login-button")
@@ -15,6 +16,10 @@ class LoginPage(BasePage):
 
         self.config = configparser.ConfigParser()
         self.config.read('auth.ini')
+
+    def navigate(self):
+        self.page.goto("/")
+        return self.page
 
     def login(self, username: str, password: str):
         self.username_input.fill(username)
@@ -28,6 +33,7 @@ class LoginPage(BasePage):
         username = self.config['standard_user']['username']
         password = self.config['standard_user']['password']
         self.login(username, password)
+        return InventoryPage(self.page)
 
     def login_with_locked_out_user(self):
         username = self.config['locked_out_user']['username']
@@ -38,3 +44,4 @@ class LoginPage(BasePage):
         username = self.config['problem_user']['username']
         password = self.config['problem_user']['password']
         self.login(username, password)
+        return InventoryPage(self.page)

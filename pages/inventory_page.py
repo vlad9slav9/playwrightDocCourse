@@ -1,12 +1,10 @@
 from playwright.async_api import Page
-
-from pages.base_page import BasePage
 from playwright.sync_api import expect
 
 
-class InventoryPage(BasePage):
+class InventoryPage:
     def __init__(self, page: Page):
-        super().__init__(page)
+        self.page = page
         self.add_to_cart_button = self.page.locator("#add-to-cart-sauce-labs-backpack")
         self.shopping_cart_link = self.page.locator("[data-test=\"shopping-cart-link\"]")
         self.inventory_item_name = self.page.locator("[data-test=\"inventory-item-name\"]")
